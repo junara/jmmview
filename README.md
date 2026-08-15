@@ -127,6 +127,17 @@ jmmview --host-theme one-dark render seq.mmd -o s.png # エディタ風テーマ
   Mermaid 図をインライン SVG 化すること(CDN 非依存にするため)
 ```
 
+### スキル
+
+AI エージェント向けの使い方ガイドとして、Claude Code 用スキル
+[`.claude/skills/jmmview/SKILL.md`](.claude/skills/jmmview/SKILL.md) を同梱しています。
+このリポジトリ内で Claude Code を使うと自動で認識されます。他のプロジェクトからも
+jmmview を使わせたい場合は、ユーザーのスキルディレクトリにコピーしてください:
+
+```bash
+mkdir -p ~/.claude/skills/jmmview && cp .claude/skills/jmmview/SKILL.md ~/.claude/skills/jmmview/
+```
+
 ## 開発
 
 ```bash
