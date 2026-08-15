@@ -1,0 +1,15 @@
+[package]
+name = "jmmview"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.6", features = ["derive"] }
+htmlize = { version = "1.1.0", features = ["unescape"] }
+merman = { version = "0.7.0", features = ["ascii", "raster"] }
+regex = "1.13.1"
+# 直接は使用しない。merman-render 0.7の推移的依存を固定するためのピン
+# (roughr-merman 0.12.2のsvgtypes更新に対してビルドが通らないため)。
+roughr-merman = "=0.12.0"
+serde_json = "1.0.151"
