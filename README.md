@@ -14,8 +14,50 @@ Claude Code が出力する Mermaid 図を、**Node.js・Chromium・CDN なし**
 
 ## インストール
 
+### 前提
+
+Rust ツールチェーン(**Rust 1.88 以降**、edition 2024)が必要です。未導入の場合:
+
 ```bash
-cargo install --path .
+# rustup(公式)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+```bash
+# または Homebrew(macOS)
+brew install rustup && rustup default stable
+```
+
+Node.js・Chromium・ネットワーク上の CDN は一切不要です。ビルドに必要なのは Rust だけです。
+
+### GitHub からインストール
+
+```bash
+cargo install --git https://github.com/junara/jmmview --locked
+```
+
+### ソースからインストール
+
+```bash
+git clone https://github.com/junara/jmmview.git
+cd jmmview
+cargo install --path . --locked
+```
+
+`--locked` を推奨します。`Cargo.lock` に記録された依存バージョン(ビルド互換性のための `roughr-merman = 0.12.0` ピンを含む)をそのまま使ってビルドします。
+
+バイナリは `~/.cargo/bin/jmmview` に入ります(rustup 導入時に PATH へ自動追加されます)。
+
+### 動作確認
+
+```bash
+jmmview --help
+```
+
+```bash
+echo 'sequenceDiagram
+    A->>B: hello
+    B-->>A: world' | jmmview ascii
 ```
 
 ## 使い方
