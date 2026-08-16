@@ -291,7 +291,9 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-手動リリースでは、Actions の `Release` → `Run workflow` を選び、`version` に `v0.1.0`
-のようなバージョンを入力します。`prerelease` を有効にするとプレリリースとして公開されます。
+手動リリースでは、Actions の `Release` → `Run workflow` を `main` ブランチから実行し、`version` に
+`Cargo.toml` と一致する `v0.1.0` のようなバージョンを入力します。`prerelease` を有効にすると
+プレリリースとして公開されます。リリース前にフォーマット、Clippy、テストを実行します。既存の
+GitHub Release に対して再実行した場合は、アセットを置き換えます。
 
 注意: 依存クレート `roughr-merman` は 0.7 系 merman との互換性のため `0.12.0` に固定しています(`Cargo.lock`)。`cargo update` で `roughr-merman` が 0.12.2 以降に上がるとビルドが壊れます。

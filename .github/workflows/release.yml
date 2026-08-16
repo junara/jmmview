@@ -22,13 +22,61 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
-  RELEASE_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
+  RELEASE_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || contains(github.ref_name, '-') }}
 
 jobs:
+  verify:
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    name: Verify release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate release version
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]; then
+            echo "Invalid release version: $RELEASE_TAG" >&2
+            echo "Expected a version such as v0.1.0 or v0.1.0-rc.1" >&2
+            exit 1
+          fi
+
+          [[ "$RELEASE_TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+) ]] || exit 1
+          release_version="${BASH_REMATCH[1]}"
+          cargo_version="$(sed -n 's/^version = "\([^"]*\)"$/\1/p' Cargo.toml | head -n 1)"
+          if [[ "$release_version" != "$cargo_version" ]]; then
+            echo "Release version $release_version does not match Cargo.toml version $cargo_version" >&2
+            exit 1
+          fi
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: stable
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+      - name: Run tests
+        run: cargo test --locked --all-features
+
   package:
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
     permissions:
       contents: read
     name: Package (${{ matrix.target }})
+    needs: verify
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -53,7 +101,7 @@ jobs:
       - name: Validate release version
         shell: bash
         run: |
-          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]; then
             echo "Invalid release version: $RELEASE_TAG" >&2
             echo "Expected a version such as v0.1.0 or v0.1.0-rc.1" >&2
             exit 1
@@ -95,6 +143,7 @@ jobs:
           if-no-files-found: error
 
   publish:
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
     permissions:
       contents: write
     name: Publish GitHub Release
@@ -110,15 +159,27 @@ jobs:
 
       - name: Generate checksums
         working-directory: dist
-        run: sha256sum * > checksums.txt
+        run: sha256sum -- * > checksums.txt
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          args=(release create "$RELEASE_TAG" --target "$GITHUB_SHA" --generate-notes)
-          if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
-            args+=(--prerelease)
+          if tag_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${RELEASE_TAG}" --jq .sha 2>/dev/null)"; then
+            if [[ "$tag_sha" != "$GITHUB_SHA" ]]; then
+              echo "Release tag $RELEASE_TAG points to $tag_sha, but this workflow builds $GITHUB_SHA." >&2
+              exit 1
+            fi
           fi
-          gh "${args[@]}" dist/*
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; replacing its assets."
+          else
+            args=(release create "$RELEASE_TAG" --target "$GITHUB_SHA" --generate-notes)
+            if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+              args+=(--prerelease)
+            fi
+            gh "${args[@]}"
+          fi
+          gh release upload "$RELEASE_TAG" dist/* --clobber
