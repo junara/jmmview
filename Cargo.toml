@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT"
 description = "Render Mermaid diagrams natively (no Node, no CDN): SVG/PNG/JPEG/PDF export, offline HTML inlining, and terminal preview, powered by merman"
+repository = "https://github.com/junara/jmmview"
+homepage = "https://github.com/junara/jmmview"
 keywords = ["mermaid", "diagram", "svg", "cli"]
 categories = ["command-line-utilities", "visualization"]
 
