@@ -282,12 +282,16 @@ cargo build --release
 ```
 
 GitHub Actions では、`main` への push と pull request でフォーマット、Clippy、テスト、
-Linux/macOS/Windows のビルドを実行します。`v*` 形式のタグを push すると、各 OS 向けの
-リリースアーカイブと SHA-256 チェックサムを GitHub Release に自動公開します。
+Linux/macOS/Windows のビルドを実行します。リリースは `v*` 形式のタグ push、または GitHub
+Actions の `Release` workflow の `Run workflow` から実行できます。各 OS 向けのリリース
+アーカイブと SHA-256 チェックサムが GitHub Release に自動公開されます。
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
+手動リリースでは、Actions の `Release` → `Run workflow` を選び、`version` に `v0.1.0`
+のようなバージョンを入力します。`prerelease` を有効にするとプレリリースとして公開されます。
 
 注意: 依存クレート `roughr-merman` は 0.7 系 merman との互換性のため `0.12.0` に固定しています(`Cargo.lock`)。`cargo update` で `roughr-merman` が 0.12.2 以降に上がるとビルドが壊れます。

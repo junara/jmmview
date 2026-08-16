@@ -4,12 +4,25 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (for example, v0.1.0)"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark this release as a pre-release"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 env:
   CARGO_TERM_COLOR: always
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+  RELEASE_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
 
 jobs:
   package:
@@ -37,6 +50,15 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Validate release version
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release version: $RELEASE_TAG" >&2
+            echo "Expected a version such as v0.1.0 or v0.1.0-rc.1" >&2
+            exit 1
+          fi
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
@@ -55,21 +77,21 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          archive="jmmview-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz"
+          archive="jmmview-${RELEASE_TAG}-${{ matrix.target }}.tar.gz"
           tar -C "target/${{ matrix.target }}/release" -czf "$archive" jmmview
 
       - name: Package Windows binary
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $archive = "jmmview-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip"
+          $archive = "jmmview-$env:RELEASE_TAG-${{ matrix.target }}.zip"
           Compress-Archive -Path "target/${{ matrix.target }}/release/jmmview.exe" -DestinationPath $archive
 
       - name: Upload package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: package-${{ matrix.target }}
-          path: jmmview-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.archive }}
+          path: jmmview-${{ env.RELEASE_TAG }}-${{ matrix.target }}.${{ matrix.archive }}
           if-no-files-found: error
 
   publish:
@@ -93,4 +115,10 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes
+        shell: bash
+        run: |
+          args=(release create "$RELEASE_TAG" --target "$GITHUB_SHA" --generate-notes)
+          if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+          gh "${args[@]}" dist/*
