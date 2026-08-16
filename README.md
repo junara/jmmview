@@ -114,28 +114,90 @@ jmmview --host-theme one-dark render seq.mmd -o s.png # エディタ風テーマ
 - `--theme`: default / base / dark / forest / neutral / neo / neo-dark / redux 系
 - `--host-theme`: editor-light / editor-dark / one-dark / gruvbox-light / gruvbox-dark / ayu-light / ayu-dark
 
-## Claude Code との連携
+## AI エージェントとの連携
 
 - 標準入力・標準出力対応なのでパイプで直接つなげます
 - `export --json` は生成ファイル一覧を JSON で返すため、機械的に扱えます(ブロックが見つからない場合も JSON を出力して exit 1)
 - 失敗はデフォルトで警告のみ(元ブロックを保持)、`html --strict` / `export --strict` で exit code に反映
 
-`CLAUDE.md` に次のように書いておくと、Claude Code が HTML 出力後に自動で図をインライン化できます:
+エージェントに使い方を教えるスキルを同梱しています。導入方法は次の [Agent Skill](#agent-skill) を参照してください。
+
+## Agent Skill
+
+AI エージェント(Claude Code など)が jmmview を正しく使えるようにするスキルを同梱しています
+([`skills/jmmview/SKILL.md`](skills/jmmview/SKILL.md))。コマンド早見表、典型ワークフロー、
+テーマ、エラー処理と既知の制約が書かれており、エージェントは「この図を PNG にして」程度の
+指示から適切なコマンドを組み立てられます。
+
+導入方法は 3 通りあります。
+
+### Claude Code プラグイン(マーケットプレイス)
+
+Claude Code 内でそのまま実行してください:
+
+```
+/plugin marketplace add junara/jmmview
+```
+
+```
+/plugin install jmmview@jmmview
+```
+
+スキルが導入され(`/jmmview:jmmview` で明示的に呼び出せます)、リポジトリのデフォルト
+ブランチに追従します。
+
+### GitHub CLI(`gh skill`)
+
+Claude Code 以外のエージェント(GitHub Copilot、Cursor、Codex、Gemini CLI など)にも
+導入できます:
+
+```bash
+gh skill install junara/jmmview jmmview --agent claude-code
+```
+
+```bash
+gh skill install junara/jmmview jmmview --agent github-copilot --scope user
+```
+
+```bash
+gh skill install junara/jmmview jmmview@v0.1.0 --agent claude-code
+```
+
+エージェントごとのディレクトリ(Claude Code なら `.claude/skills/jmmview/`)に配置されます。
+
+### APM パッケージマネージャ
+
+```bash
+apm install junara/jmmview
+```
+
+スキルに加えて、再利用可能なプロンプト(`inline-mermaid-html`、`export-diagrams`、
+`preview-mermaid`)も入ります。
+
+### 手動での導入
+
+上記が使えない場合は、ファイルをコピーするだけでも動きます:
+
+```bash
+mkdir -p ~/.claude/skills/jmmview && cp skills/jmmview/SKILL.md ~/.claude/skills/jmmview/
+```
+
+### CLAUDE.md への記載
+
+プロジェクトの `CLAUDE.md` に次の一文を入れておくと、Claude Code が HTML 出力のたびに
+自動で図をインライン化します:
 
 ```markdown
 - HTML レポートを生成したら `jmmview html <file> --in-place` を実行して
   Mermaid 図をインライン SVG 化すること(CDN 非依存にするため)
 ```
 
-### スキル
+### スキルを編集する場合
 
-AI エージェント向けの使い方ガイドとして、Claude Code 用スキル
-[`.claude/skills/jmmview/SKILL.md`](.claude/skills/jmmview/SKILL.md) を同梱しています。
-このリポジトリ内で Claude Code を使うと自動で認識されます。他のプロジェクトからも
-jmmview を使わせたい場合は、ユーザーのスキルディレクトリにコピーしてください:
+`skills/jmmview/SKILL.md` が正本です。編集したら APM 配布用の複製を同期してください:
 
 ```bash
-mkdir -p ~/.claude/skills/jmmview && cp .claude/skills/jmmview/SKILL.md ~/.claude/skills/jmmview/
+./scripts/sync-skill.sh
 ```
 
 ## 開発
