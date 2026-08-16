@@ -1,0 +1,20 @@
+{
+  "name": "jmmview",
+  "description": "Render Mermaid diagrams natively without Node, Chromium, or a CDN: SVG/PNG/JPEG/PDF export, offline HTML inlining, batch export from Markdown/HTML, themes, and terminal preview.",
+  "author": {
+    "name": "junara"
+  },
+  "homepage": "https://github.com/junara/jmmview",
+  "repository": "https://github.com/junara/jmmview",
+  "license": "MIT",
+  "keywords": [
+    "mermaid",
+    "diagram",
+    "sequence-diagram",
+    "svg",
+    "png",
+    "html",
+    "offline",
+    "documentation"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "jmmview",
+  "owner": {
+    "name": "junara"
+  },
+  "description": "Marketplace for the jmmview plugin: a skill that teaches Claude Code how to render Mermaid diagrams to SVG/PNG/JPEG/PDF and inline them into HTML without Node, Chromium, or a CDN.",
+  "plugins": [
+    {
+      "name": "jmmview",
+      "source": "./",
+      "description": "Skill for the jmmview CLI: convert Mermaid diagrams to SVG/PNG/JPEG/PDF, inline mermaid blocks in HTML as SVG so pages work offline, batch-export diagrams from Markdown/HTML, and preview diagrams in the terminal.",
+      "category": "productivity",
+      "tags": [
+        "mermaid",
+        "diagram",
+        "svg",
+        "documentation"
+      ]
+    }
+  ]
+}
