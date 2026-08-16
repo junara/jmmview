@@ -12,6 +12,40 @@ Claude Code が出力する Mermaid 図を、**Node.js・Chromium・CDN なし**
 - **`ascii`** — ターミナルに Unicode 罫線でプレビュー
 - **`themes`** — 利用可能なテーマの一覧
 
+## merman-cli との違い
+
+jmmview はレンダリングエンジンに [merman](https://github.com/Latias94/merman) を使っています。
+merman には公式の CLI である **[merman-cli](https://crates.io/crates/merman-cli)** があり、
+「Node・Chromium なしで Mermaid を SVG/PNG/JPEG/PDF に変換する」という基本機能は重なります。
+**単体の図を変換したいだけなら merman-cli で十分です。**
+
+jmmview は「HTML と AI エージェント」に用途を絞った別ツールです。主な違い:
+
+| | jmmview | merman-cli |
+|---|---|---|
+| HTML 内の mermaid をインライン SVG 化 | **できる**(`html`) | できない |
+| mermaid の CDN `<script>` を除去 | **できる** | できない |
+| Markdown から図を一括書き出し | できる(`export`) | できる(`batch`。書き換え済み Markdown とマニフェストも生成) |
+| HTML から図を一括書き出し | **できる** | できない(Markdown のみ) |
+| 機械可読な実行結果 | `export --json` | `lint --format json` ほか |
+| mermaid-cli(mmdc)互換 | なし | **あり**(`mmdc` サブコマンド) |
+| Lint / 自動修正 | なし | **あり**(`lint` / `fix`) |
+| パース結果・レイアウトの調査 | なし | **あり**(`detect` / `parse` / `layout`) |
+| Rustdoc 連携 | なし | **あり**(`rustdoc`) |
+| AI エージェント用スキル同梱 | **あり** | なし |
+| バイナリサイズ | 約 21MB | 約 42MB |
+
+要するに:
+
+- **merman-cli を使うべき場合** — mermaid-cli(mmdc)からの移行、Mermaid ソースの lint や自動修正、
+  パース結果の調査、Rustdoc への埋め込み、Markdown 中心のワークフロー。機能の幅は merman-cli の方が
+  はるかに広く、上流の公式ツールです。
+- **jmmview を使うべき場合** — **既存の HTML に埋め込まれた Mermaid をインライン SVG 化して
+  オフラインで開けるようにしたい**とき(merman-cli は HTML を扱いません)。AI エージェントに
+  図の変換を任せたいとき。
+
+※ 比較は jmmview 0.1.0 と merman-cli 0.8.0-alpha.5 を実際に動かして確認したものです。
+
 ## インストール
 
 ### 前提
