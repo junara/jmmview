@@ -19,6 +19,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Install Rust
@@ -29,6 +30,18 @@ jobs:
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Check commit messages
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            bash scripts/validate-commit-message.sh --range "$BASE_SHA..$HEAD_SHA"
+          elif [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            bash scripts/validate-commit-message.sh --range "$BEFORE_SHA..$HEAD_SHA"
+          fi
 
       - name: Check formatting
         run: cargo fmt --all -- --check

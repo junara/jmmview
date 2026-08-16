@@ -247,6 +247,24 @@ mise run test
 mise run build
 ```
 
+コミットメッセージは Conventional Commits 形式に統一しています。ローカルでもコミット時に
+検証する場合は、初回だけ Git hook を有効化してください。
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+例えば、次の形式が有効です。
+
+```text
+feat: Mermaid の新機能を追加
+fix(renderer): SVG 出力を修正
+ci: GitHub Actions を更新
+```
+
+pull request と `main` への push でも同じ検証を実行します。GitHub のブランチ保護設定で
+CI の成功を必須にすると、形式に違反するコミットをマージできなくなります。
+
 シェルで `cargo` や `rustc` を直接使う場合は、mise の activate を一度設定してください。
 
 ```bash
