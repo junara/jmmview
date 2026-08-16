@@ -1,5 +1,7 @@
 # jmmview
 
+[![CI](https://github.com/junara/jmmview/actions/workflows/ci.yml/badge.svg)](https://github.com/junara/jmmview/actions/workflows/ci.yml)
+
 Claude Code が出力する Mermaid 図を、**Node.js・Chromium・CDN なし**で綺麗にレンダリングする Rust 製 CLI。
 
 [merman](https://github.com/Latias94/merman)(Mermaid のヘッドレス Rust 実装、Zed でも採用)をレンダリングエンジンに使用しています。シークエンス図を含む Mermaid の全図種に対応します。
@@ -236,9 +238,38 @@ mkdir -p ~/.claude/skills/jmmview && cp skills/jmmview/SKILL.md ~/.claude/skills
 
 ## 開発
 
+mise を使う場合は、プロジェクトで指定した最新 stable の Rust toolchain と Cargo を自動的に利用できます。
+
+```bash
+mise trust
+mise install
+mise run test
+mise run build
+```
+
+シェルで `cargo` や `rustc` を直接使う場合は、mise の activate を一度設定してください。
+
+```bash
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
+exec zsh
+cargo --version
+rustc --version
+```
+
+mise を使わない場合は、通常の Rust toolchain でも実行できます。
+
 ```bash
 cargo test
 cargo build --release
+```
+
+GitHub Actions では、`main` への push と pull request でフォーマット、Clippy、テスト、
+Linux/macOS/Windows のビルドを実行します。`v*` 形式のタグを push すると、各 OS 向けの
+リリースアーカイブと SHA-256 チェックサムを GitHub Release に自動公開します。
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
 注意: 依存クレート `roughr-merman` は 0.7 系 merman との互換性のため `0.12.0` に固定しています(`Cargo.lock`)。`cargo update` で `roughr-merman` が 0.12.2 以降に上がるとビルドが壊れます。

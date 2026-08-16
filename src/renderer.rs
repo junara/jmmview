@@ -14,12 +14,7 @@ pub enum Format {
 
 impl Format {
     pub fn from_extension(path: &std::path::Path) -> Option<Self> {
-        match path
-            .extension()?
-            .to_str()?
-            .to_ascii_lowercase()
-            .as_str()
-        {
+        match path.extension()?.to_str()?.to_ascii_lowercase().as_str() {
             "svg" => Some(Self::Svg),
             "png" => Some(Self::Png),
             "jpg" | "jpeg" => Some(Self::Jpeg),

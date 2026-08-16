@@ -228,7 +228,9 @@ pub fn rewrite_html(
                 out
             }
             Ok(None) => {
-                failed.push(format!("block {index}: not recognized as a mermaid diagram"));
+                failed.push(format!(
+                    "block {index}: not recognized as a mermaid diagram"
+                ));
                 whole.as_str().to_string()
             }
             Err(err) => {
@@ -366,8 +368,16 @@ A --&gt; B</code></pre>"#;
 
         let report = rewrite_html(html, false, render_ok);
         assert_eq!(report.rendered, 1);
-        assert!(report.html.contains(r#"var t='<div class="mermaid">graph TD; A</div>';"#));
-        assert!(report.html.contains(r#"<!-- <div class="mermaid">graph TD; B</div> -->"#));
+        assert!(
+            report
+                .html
+                .contains(r#"var t='<div class="mermaid">graph TD; A</div>';"#)
+        );
+        assert!(
+            report
+                .html
+                .contains(r#"<!-- <div class="mermaid">graph TD; B</div> -->"#)
+        );
     }
 
     #[test]

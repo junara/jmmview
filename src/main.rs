@@ -177,8 +177,9 @@ fn run() -> Result<()> {
 
 fn read_input(path: Option<&Path>) -> Result<String> {
     match path {
-        Some(p) if p.as_os_str() != "-" => std::fs::read_to_string(p)
-            .with_context(|| format!("failed to read {}", p.display())),
+        Some(p) if p.as_os_str() != "-" => {
+            std::fs::read_to_string(p).with_context(|| format!("failed to read {}", p.display()))
+        }
         _ => {
             let mut buf = String::new();
             std::io::stdin()

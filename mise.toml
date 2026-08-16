@@ -1,0 +1,10 @@
+[tools]
+rust = { version = "latest", profile = "default" }
+
+[tasks.test]
+description = "Run the Rust test suite"
+run = "cargo test --locked --all-features"
+
+[tasks.build]
+description = "Build the release binary"
+run = "cargo build --locked --release"
