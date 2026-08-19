@@ -43,6 +43,9 @@ jobs:
             bash scripts/validate-commit-message.sh --range "$BEFORE_SHA..$HEAD_SHA"
           fi
 
+      - name: Check skill sync
+        run: bash scripts/sync-skill.sh --check
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
