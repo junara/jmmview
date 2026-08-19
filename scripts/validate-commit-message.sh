@@ -5,6 +5,10 @@ pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([A-Za
 
 validate_subject() {
     local subject="$1"
+    # マージコミットは Conventional Commits の対象外
+    if [[ "$subject" =~ ^Merge\  ]]; then
+        return 0
+    fi
     if [[ ! "$subject" =~ $pattern ]]; then
         echo "invalid commit message: $subject" >&2
         echo "expected: <type>[optional scope][!]: <description>" >&2
@@ -25,7 +29,7 @@ if [[ "${1:-}" == "--range" ]]; then
             echo "commit: $sha" >&2
             failed=1
         fi
-    done < <(git log --format='%H%x09%s' "$2")
+    done < <(git log --no-merges --format='%H%x09%s' "$2")
     exit "$failed"
 fi
 
